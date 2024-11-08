@@ -1,0 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: myfirstdevopsservice
+spec:
+  selector:
+    name: myapp
+  ports:
+    - protocol: TCP
+      # Port accessible inside cluster
+      port: 80
+      # Port to forward to inside the pod
+      targetPort: 80
+      # Port accessible outside cluster
+      nodePort: 30000
+  type: NodePort
