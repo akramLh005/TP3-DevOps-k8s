@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myfirstdevopsappdeployment
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      name: myapp
+  template:
+    metadata:
+      labels:
+        name: myapp
+    spec:
+      containers:
+        - name: myapp
+          image: kubemubin/devops-project-one
+          ports:
+            - containerPort: 80
