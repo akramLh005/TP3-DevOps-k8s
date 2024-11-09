@@ -1,4 +1,4 @@
-ansible_server_private_ip="192.168.99.10"
+ansible_server_private_ip="192.168.0.14"
 kubernetes_server_private_ip="192.168.0.12"
 node{
     stage('Git checkout'){
