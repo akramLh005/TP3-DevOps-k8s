@@ -64,7 +64,7 @@ stage('Kubernetes Deployment Using Ansible') {
 
             # Test Ansible connection and run the playbook
             cd /home/vagrant/ &&
-            ansible ws1-m ping  &&
+            ansible ws1 -m ping  &&
             ansible-playbook /home/vagrant/tp3-devops-k8s/ansible-playbook.yml
             '
         """
