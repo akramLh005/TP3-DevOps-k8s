@@ -52,6 +52,7 @@ stage('Sending Dockerfile to Ansible server') {
  
     stage('Kubernetes deployment using ansible'){
      sshagent(['ansible-server']) {
+      git branch: "${BRANCH}", url: "${REPO_URL}"
       sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} cd /home/vagrant/"
       sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} ansible ws1 -m ping "
       sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} ansible-playbook ansible-playbook.yml"
