@@ -47,24 +47,30 @@ stage('Sending Dockerfile to Ansible server') {
 
     
  
-stage('Clone or Update Repository on Ansible Server') {
+stage('Kubernetes Deployment Using Ansible') {
     sshagent(['ansible-server']) {
         sh """
             ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} '
             # Navigate to the directory or create it if it doesn’t exist
             mkdir -p /home/vagrant/tp3-devops-k8s && cd /home/vagrant/tp3-devops-k8s
 
-            # Clone the repository if it doesn't exist, otherwise pull the latest changes
+            # Clone the repository if it doesn’t exist, otherwise pull the latest changes
             if [ ! -d .git ]; then
                 git clone -b ${BRANCH} ${REPO_URL} .
             else
                 git fetch origin
                 git reset --hard origin/${BRANCH}
             fi
+
+            # Test Ansible connection and run the playbook
+            cd /home/vagrant/ &&
+            ansible -m ping ${kubernetes_server_private_ip} &&
+            ansible-playbook /home/vagrant/tp3-devops-k8s/ansible-playbook.yml
             '
         """
     }
 }
+
 
 
  
