@@ -44,12 +44,6 @@ stage('Sending Dockerfile to Ansible server') {
         }
     }
     
-    stage('Copy files from jenkins to kubernetes server'){
-     sshagent(['kubernetes-server']) {
-      sh "ssh -o StrictHostKeyChecking=no ubuntu@${kubernetes_server_private_ip} cd /home/ubuntu/"
-      sh "scp /var/lib/jenkins/workspace/tp3-devops-k8s/* ubuntu@${kubernetes_server_private_ip}:/home/ubuntu"
-     }
-    }
  
     stage('Kubernetes deployment using ansible'){
      sshagent(['ansible-server']) {
