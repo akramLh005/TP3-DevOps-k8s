@@ -25,8 +25,8 @@ stage('Sending Dockerfile to Ansible server') {
             sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} docker image build -t $JOB_NAME:v-$BUILD_ID ."
          //building docker image ends
          //Tagging docker image starts
-            sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} docker image tag $JOB_NAME:v-$BUILD_ID kubemubin/$JOB_NAME:v-$BUILD_ID"
-         sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} docker image tag $JOB_NAME:v-$BUILD_ID kubemubin/$JOB_NAME:latest"
+            sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} docker image tag $JOB_NAME:v-$BUILD_ID akramlh/$JOB_NAME:v-$BUILD_ID"
+         sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} docker image tag $JOB_NAME:v-$BUILD_ID akramlh/$JOB_NAME:latest"
          //Tagging docker image ends
         }
     }
