@@ -13,7 +13,7 @@ stage('Sending Dockerfile to Ansible server') {
         sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'echo Connection established'"
 
         // Use scp with the same credentials
-        sh "scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/devops-project-one/* vagrant@${ansible_server_private_ip}:/home/vagrant"
+        sh "scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/TP3-kubernetes/* vagrant@${ansible_server_private_ip}:/home/vagrant"
     }
 }
 
@@ -47,7 +47,7 @@ stage('Sending Dockerfile to Ansible server') {
     stage('Copy files from jenkins to kubernetes server'){
      sshagent(['kubernetes-server']) {
       sh "ssh -o StrictHostKeyChecking=no ubuntu@${kubernetes_server_private_ip} cd /home/ubuntu/"
-      sh "scp /var/lib/jenkins/workspace/devops-project-one/* ubuntu@${kubernetes_server_private_ip}:/home/ubuntu"
+      sh "scp /var/lib/jenkins/workspace/TP3-kubernetes/* ubuntu@${kubernetes_server_private_ip}:/home/ubuntu"
      }
     }
  
