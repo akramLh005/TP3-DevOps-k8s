@@ -73,7 +73,11 @@ stage('Kubernetes Deployment Using Ansible') {
         """
     }
 }
-
+        stage('Kubernetes port-forwarding') {
+        sh """
+        kubectl port-forward - address 0.0.0.0 svc/myfirstdevopsservice 30000:80 &
+        """
+        }
 
 
  
