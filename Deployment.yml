@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: kubemubin/devops-project-one
+          image: akramlh/tp3-k8s
           ports:
             - containerPort: 80
