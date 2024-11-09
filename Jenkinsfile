@@ -44,13 +44,12 @@ stage('Sending Dockerfile to Ansible server') {
       }
         }
     }
-    stages {
         stage('Clone Latest Code') {
             steps {
                 git branch: "${BRANCH}", url: "${REPO_URL}"
             }
         }
-    }
+    
  
     stage('Kubernetes deployment using ansible'){
      sshagent(['ansible-server']) {
