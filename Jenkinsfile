@@ -10,7 +10,7 @@ node{
 stage('Sending Dockerfile to Ansible server') {
     sshagent(['ansible-server']) {
         // Disable pseudo-terminal allocation with -T and test connection
-        sh "ssh -tt -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'echo Connection established'"
+        sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'echo Connection established'"
 
         // Use scp with the same credentials
         sh "scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/devops-project-one/* vagrant@${ansible_server_private_ip}:/home/vagrant"
