@@ -50,13 +50,28 @@ stage('Sending Dockerfile to Ansible server') {
         }
     
  
-    stage('Kubernetes deployment using ansible'){
-     sshagent(['ansible-server']) {
-      git branch: "${BRANCH}", url: "${REPO_URL}"
-      sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} cd /home/vagrant/tp3-devops-k8s"
-      sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} ansible ws1 -m ping "
-      sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} ansible-playbook ansible-playbook.yml"
-     } 
+stage('Kubernetes Deployment Using Ansible') {
+    sshagent(['ansible-server']) {
+        sh """
+            ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} '
+            # Navigate to the directory, or create it if it doesn’t exist
+            mkdir -p /home/vagrant/tp3-devops-k8s && cd /home/vagrant/tp3-devops-k8s
+            
+            # Check if repository exists; if not, clone it, else pull the latest changes
+            if [ ! -d .git ]; then
+                git clone -b ${BRANCH} ${REPO_URL} .
+            else
+                git fetch origin
+                git reset --hard origin/${BRANCH}
+            fi
+
+            # Test Ansible connection and run playbook
+            ansible ws1 -m ping && 
+            ansible-playbook ansible-playbook.yml
+            '
+        """
     }
+}
+
  
 }
