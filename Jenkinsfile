@@ -1,9 +1,10 @@
 ansible_server_private_ip="192.168.0.14"
 kubernetes_server_private_ip="192.168.0.12"
+REPO_URL="https://github.com/akramLh005/tp3-devops-k8s.git"
+BRANCH= "main"   
 node{
     stage('Git checkout'){
-        //replace with your github repo url
-        git branch: 'main', url: 'https://github.com/akramLh005/tp3-devops-k8s.git'
+        git branch: "${BRANCH}", url: "${REPO_URL}"
     }
     
      //all below sshagent variables created using Pipeline syntax
@@ -43,7 +44,13 @@ stage('Sending Dockerfile to Ansible server') {
       }
         }
     }
-    
+    stages {
+        stage('Clone Latest Code') {
+            steps {
+                git branch: "${BRANCH}", url: "${REPO_URL}"
+            }
+        }
+    }
  
     stage('Kubernetes deployment using ansible'){
      sshagent(['ansible-server']) {
