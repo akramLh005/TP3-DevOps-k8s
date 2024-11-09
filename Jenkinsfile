@@ -3,7 +3,7 @@ kubernetes_server_private_ip="192.168.0.12"
 node{
     stage('Git checkout'){
         //replace with your github repo url
-        git branch: 'main', url: 'https://github.com/akramLh005/TP3-DevOps-k8s.git'
+        git branch: 'main', url: 'https://github.com/akramLh005/tp3-devops-k8s.git'
     }
     
      //all below sshagent variables created using Pipeline syntax
@@ -13,7 +13,7 @@ stage('Sending Dockerfile to Ansible server') {
         sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'echo Connection established'"
 
         // Use scp with the same credentials
-        sh "scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/TP3-kubernetes/* vagrant@${ansible_server_private_ip}:/home/vagrant"
+        sh "scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/tp3-devops-k8s/* vagrant@${ansible_server_private_ip}:/home/vagrant"
     }
 }
 
@@ -47,7 +47,7 @@ stage('Sending Dockerfile to Ansible server') {
     stage('Copy files from jenkins to kubernetes server'){
      sshagent(['kubernetes-server']) {
       sh "ssh -o StrictHostKeyChecking=no ubuntu@${kubernetes_server_private_ip} cd /home/ubuntu/"
-      sh "scp /var/lib/jenkins/workspace/TP3-kubernetes/* ubuntu@${kubernetes_server_private_ip}:/home/ubuntu"
+      sh "scp /var/lib/jenkins/workspace/tp3-devops-k8s/* ubuntu@${kubernetes_server_private_ip}:/home/ubuntu"
      }
     }
  
