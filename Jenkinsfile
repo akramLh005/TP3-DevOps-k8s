@@ -45,9 +45,8 @@ stage('Sending Dockerfile to Ansible server') {
         }
     }
         stage('Clone Latest Code') {
-            steps {
                 git branch: "${BRANCH}", url: "${REPO_URL}"
-            }
+           
         }
     
  
