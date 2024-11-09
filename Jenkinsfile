@@ -3,20 +3,23 @@ kubernetes_server_private_ip="192.168.0.12"
 REPO_URL="https://github.com/akramLh005/tp3-devops-k8s.git"
 BRANCH= "main"   
 node{
-    stage('Git checkout'){
+stage('Git Checkout') {
+        // Pull the latest code from the specified branch
         git branch: "${BRANCH}", url: "${REPO_URL}"
     }
-    
-     //all below sshagent variables created using Pipeline syntax
-stage('Sending Dockerfile to Ansible server') {
-    sshagent(['ansible-server']) {
-        // Disable pseudo-terminal allocation with -T and test connection
-        sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'echo Connection established'"
 
-        // Use scp with the same credentials
-        sh "scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/tp3-devops-k8s/* vagrant@${ansible_server_private_ip}:/home/vagrant"
+    stage('Sending Dockerfile to Ansible Server') {
+        sshagent(['ansible-server']) {
+            // Test SSH connection to the Ansible server
+            sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'echo Connection established'"
+
+            // Clean up the target directory on Ansible server
+            sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'rm -rf /home/vagrant/tp3-devops-k8s/*'"
+
+            // Use scp to transfer all files from Jenkins workspace to Ansible server
+            sh "scp -o StrictHostKeyChecking=no ${env.WORKSPACE}/* vagrant@${ansible_server_private_ip}:/home/vagrant/tp3-devops-k8s/"
+        }
     }
-}
 
     
     stage('Docker build image'){
