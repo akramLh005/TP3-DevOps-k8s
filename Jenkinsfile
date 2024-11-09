@@ -44,10 +44,7 @@ stage('Sending Dockerfile to Ansible server') {
       }
         }
     }
-        stage('Clone Latest Code') {
-                git branch: "${BRANCH}", url: "${REPO_URL}"
-           
-        }
+
     
  
 stage('Clone or Update Repository on Ansible Server') {
@@ -55,7 +52,7 @@ stage('Clone or Update Repository on Ansible Server') {
         sh """
             ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} '
             # Navigate to the directory or create it if it doesn’t exist
-            mkdir -p /home/akram/tp3-devops-k8s && cd /home/akram/tp3-devops-k8s
+            mkdir -p /home/vagrant/tp3-devops-k8s && cd /home/vagrant/tp3-devops-k8s
 
             # Clone the repository if it doesn't exist, otherwise pull the latest changes
             if [ ! -d .git ]; then
