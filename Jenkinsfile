@@ -7,12 +7,16 @@ node{
     }
     
      //all below sshagent variables created using Pipeline syntax
-    stage('Sending Dockerfile to Ansible server'){
-        sshagent(['ansible-server']) {
-            sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip}"
-            sh "scp /var/lib/jenkins/workspace/devops-project-one/* vagrant@${ansible_server_private_ip}:/home/vagrant"
-        }
+stage('Sending Dockerfile to Ansible server') {
+    sshagent(['ansible-server']) {
+        // Disable pseudo-terminal allocation with -T
+        sh "ssh -T -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'echo Connection established'"
+        
+        // Use scp directly without additional SSH session
+        sh "scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/devops-project-one/* vagrant@${ansible_server_private_ip}:/home/vagrant"
     }
+}
+
     
     stage('Docker build image'){
         sshagent(['ansible-server']) {
