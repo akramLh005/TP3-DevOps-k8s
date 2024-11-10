@@ -69,34 +69,37 @@ node {
         }
     }
 
-        stage('Deploy Prometheus and Grafana Monitoring') {
-        sshagent(['ansible-server']) {
+stage('Deploy Prometheus and Grafana Monitoring') {
+    steps {
+        script {
+            // Check if Helm is installed; install if necessary
             sh """
-            ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} '
-            # Install Helm if not already installed
-            if ! command -v helm &> /dev/null; then
-                curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-            fi
+                if ! command -v helm &> /dev/null; then
+                    curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+                fi
+            """
 
-            # Add Prometheus and Grafana Helm repositories
-            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-            helm repo add grafana https://grafana.github.io/helm-charts
-            helm repo update
+            // Add Prometheus and Grafana Helm repositories and update
+            sh """
+                helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+                helm repo add grafana https://grafana.github.io/helm-charts
+                helm repo update
+            """
 
-            # Install Prometheus and Grafana using kube-prometheus-stack Helm chart
-            helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+            // Install Prometheus and Grafana using the kube-prometheus-stack Helm chart
+            sh """
+                helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+            """
 
-            # Port-forwarding Grafana (Optional, to access from localhost:3000)
-            nohup kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 > /dev/null 2>&1 &
-            '
+            // Optional: Port-forward Grafana for access from localhost:3000
+            sh """
+                nohup kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 > /dev/null 2>&1 &
             """
         }
     }
-    stage('Kubernetes Port-Forwarding') {
-        sh """
-        kubectl port-forward --address 0.0.0.0 svc/myfirstdevopsservice 30000:80
-        """
-    }
+}
+
+
 
 
 }
