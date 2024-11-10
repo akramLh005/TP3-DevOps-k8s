@@ -69,13 +69,7 @@ node {
         }
     }
 
-    stage('Kubernetes Port-Forwarding') {
-        sh """
-        kubectl port-forward --address 0.0.0.0 svc/myfirstdevopsservice 30000:80
-        """
-    }
-
-    stage('Deploy Prometheus and Grafana Monitoring') {
+        stage('Deploy Prometheus and Grafana Monitoring') {
         sshagent(['ansible-server']) {
             sh """
             ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} '
@@ -98,4 +92,11 @@ node {
             """
         }
     }
+    stage('Kubernetes Port-Forwarding') {
+        sh """
+        kubectl port-forward --address 0.0.0.0 svc/myfirstdevopsservice 30000:80
+        """
+    }
+
+
 }
