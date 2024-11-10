@@ -2,8 +2,9 @@ ansible_server_private_ip="192.168.0.14"
 kubernetes_server_private_ip="192.168.0.12"
 REPO_URL="https://github.com/akramLh005/tp3-devops-k8s.git"
 BRANCH= "main"   
-node{
-stage('Git Checkout') {
+
+node {
+    stage('Git Checkout') {
         // Pull the latest code from the specified branch
         git branch: "${BRANCH}", url: "${REPO_URL}"
     }
@@ -21,65 +22,80 @@ stage('Git Checkout') {
         }
     }
 
-    
-    stage('Docker build image'){
+    stage('Docker build image') {
         sshagent(['ansible-server']) {
-         //building docker image starts
-            sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} cd /home/vagrant/"
-            sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} docker image build -t $JOB_NAME:v-$BUILD_ID ."
-         //building docker image ends
-         //Tagging docker image starts
-            sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} docker image tag $JOB_NAME:v-$BUILD_ID akramlh/$JOB_NAME:v-$BUILD_ID"
-         sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} docker image tag $JOB_NAME:v-$BUILD_ID akramlh/$JOB_NAME:latest"
-         //Tagging docker image ends
-        }
-    }
-    
-    stage('push docker images to dockerhub'){
-     sshagent(['ansible-server']) {
-      withCredentials([string(credentialsId:'dockerhub_passwd', variable: 'dockerhub_passwd')]){
-       sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} docker login -u akramlh -p ${dockerhub_passwd}"
-       sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} docker image push akramlh/$JOB_NAME:v-$BUILD_ID"
-       sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} docker image push akramlh/$JOB_NAME:latest"
-       
-       //also delete old docker images
-       sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} docker image rm akramlh/$JOB_NAME:v-$BUILD_ID akramlh/$JOB_NAME:latest $JOB_NAME:v-$BUILD_ID"
-      }
+            // Building Docker image
+            sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'cd /home/vagrant/tp3-devops-k8s && docker image build -t $JOB_NAME:v-$BUILD_ID .'"
+
+            // Tagging Docker image
+            sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'docker image tag $JOB_NAME:v-$BUILD_ID akramlh/$JOB_NAME:v-$BUILD_ID'"
+            sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'docker image tag $JOB_NAME:v-$BUILD_ID akramlh/$JOB_NAME:latest'"
         }
     }
 
-    
- 
-stage('Kubernetes Deployment Using Ansible') {
-    sshagent(['ansible-server']) {
-        sh """
-            ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} '
-            # Navigate to the directory or create it if it doesn’t exist
-            mkdir -p /home/vagrant/tp3-devops-k8s && cd /home/vagrant/tp3-devops-k8s
+    stage('Push Docker Images to DockerHub') {
+        sshagent(['ansible-server']) {
+            withCredentials([string(credentialsId: 'dockerhub_passwd', variable: 'dockerhub_passwd')]) {
+                sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'docker login -u akramlh -p ${dockerhub_passwd}'"
+                sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'docker image push akramlh/$JOB_NAME:v-$BUILD_ID'"
+                sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'docker image push akramlh/$JOB_NAME:latest'"
 
-            # Clone the repository if it doesn’t exist, otherwise pull the latest changes
-            if [ ! -d .git ]; then
-                git clone -b ${BRANCH} ${REPO_URL} .
-            else
-                git fetch origin
-                git reset --hard origin/${BRANCH}
-            fi
-
-            # Test Ansible connection and run the playbook
-            cd /home/vagrant/tp3-devops-k8s &&
-            ansible ws1 -m ping  &&
-            ansible-playbook /home/vagrant/tp3-devops-k8s/ansible-playbook.yml
-            '
-        """
+                // Also delete old Docker images
+                sh "ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} 'docker image rm akramlh/$JOB_NAME:v-$BUILD_ID akramlh/$JOB_NAME:latest $JOB_NAME:v-$BUILD_ID'"
+            }
+        }
     }
-}
-        stage('Kubernetes port-forwarding') {
+
+    stage('Kubernetes Deployment Using Ansible') {
+        sshagent(['ansible-server']) {
+            sh """
+                ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} '
+                mkdir -p /home/vagrant/tp3-devops-k8s && cd /home/vagrant/tp3-devops-k8s
+
+                # Clone the repository if it doesn’t exist, otherwise pull the latest changes
+                if [ ! -d .git ]; then
+                    git clone -b ${BRANCH} ${REPO_URL} .
+                else
+                    git fetch origin
+                    git reset --hard origin/${BRANCH}
+                fi
+
+                # Test Ansible connection and run the playbook
+                cd /home/vagrant/tp3-devops-k8s &&
+                ansible ws1 -m ping  &&
+                ansible-playbook /home/vagrant/tp3-devops-k8s/ansible-playbook.yml
+                '
+            """
+        }
+    }
+
+    stage('Kubernetes Port-Forwarding') {
         sh """
         kubectl port-forward --address 0.0.0.0 svc/myfirstdevopsservice 30000:80
-
         """
+    }
+
+    stage('Deploy Prometheus and Grafana Monitoring') {
+        sshagent(['ansible-server']) {
+            sh """
+            ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} '
+            # Install Helm if not already installed
+            if ! command -v helm &> /dev/null; then
+                curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+            fi
+
+            # Add Prometheus and Grafana Helm repositories
+            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+            helm repo add grafana https://grafana.github.io/helm-charts
+            helm repo update
+
+            # Install Prometheus and Grafana using kube-prometheus-stack Helm chart
+            helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+
+            # Port-forwarding Grafana (Optional, to access from localhost:3000)
+            nohup kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 > /dev/null 2>&1 &
+            '
+            """
         }
-
-
- 
+    }
 }
