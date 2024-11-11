@@ -69,34 +69,6 @@ node {
         }
     }
 
-stage('Deploy Prometheus and Grafana Monitoring') {
-    // Check if Helm is installed; install if necessary
-    sh """
-        if ! command -v helm &> /dev/null; then
-            curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-        fi
-    """
-
-    // Add Prometheus and Grafana Helm repositories and update
-    sh """
-        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-        helm repo add grafana https://grafana.github.io/helm-charts
-        helm repo update
-    """
-
-    // Install Prometheus and Grafana using the kube-prometheus-stack Helm chart
-    sh """
-        helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
-    """
-
-    // Optional: Port-forward Grafana for access from localhost:3000
-    sh """
-        nohup kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 > /dev/null 2>&1 &
-    """
-}
-
-
-
 
 
 }
