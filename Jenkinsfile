@@ -46,29 +46,28 @@ node {
         }
     }
 
-stage('Kubernetes Deployment Using Ansible') {
-    sshagent(['ansible-server']) {
-        sh """
-            ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} << 'EOF'
-            # Create the project directory and navigate to it
-            mkdir -p /home/vagrant/tp3-devops-k8s
-            cd /home/vagrant/tp3-devops-k8s
+ stage('Kubernetes Deployment Using Ansible') {
+        sshagent(['ansible-server']) {
+            sh """
+                ssh -o StrictHostKeyChecking=no vagrant@${ansible_server_private_ip} '
+                mkdir -p /home/vagrant/tp3-devops-k8s && cd /home/vagrant/tp3-devops-k8s
 
-            # Clone the repository if it doesn’t exist, otherwise pull the latest changes
-            if [ ! -d .git ]; then
-                git clone -b ${BRANCH} ${REPO_URL} .
-            else
-                git fetch origin
-                git reset --hard origin/${BRANCH}
-            fi
+                # Clone the repository if it doesn’t exist, otherwise pull the latest changes
+                if [ ! -d .git ]; then
+                    git clone -b ${BRANCH} ${REPO_URL} .
+                else
+                    git fetch origin
+                    git reset --hard origin/${BRANCH}
+                fi
 
-            # Test Ansible connection and run the playbook
-            ansible ws1 -m ping &&
-            ansible-playbook /home/vagrant/tp3-devops-k8s/ansible-playbook.yml
-            EOF
-        """
+                # Test Ansible connection and run the playbook
+                cd /home/vagrant/tp3-devops-k8s &&
+                ansible ws1 -m ping  &&
+                ansible-playbook /home/vagrant/tp3-devops-k8s/ansible-playbook.yml
+                '
+            """
+        }
     }
-}
 
 
 }
