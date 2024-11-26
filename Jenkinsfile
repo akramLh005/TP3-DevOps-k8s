@@ -1,5 +1,5 @@
-ansible_server_private_ip="192.168.0.14"
-kubernetes_server_private_ip="192.168.0.12"
+ansible_server_private_ip="192.168.0.133"
+kubernetes_server_private_ip="192.168.0.143"
 REPO_URL="https://github.com/akramLh005/tp3-devops-k8s.git"
 BRANCH= "main"   
 
