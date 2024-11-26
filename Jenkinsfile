@@ -4,7 +4,7 @@ REPO_URL="https://github.com/akramLh005/tp3-devops-k8s.git"
 BRANCH= "main"   
 
 node {
-    stage('Git Checkout') {
+    stage('Git Checkout ') {
         // Pull the latest code from the specified branch
         git branch: "${BRANCH}", url: "${REPO_URL}"
     }
